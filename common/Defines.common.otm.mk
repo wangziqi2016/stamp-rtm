@@ -15,7 +15,7 @@ CFLAGS_OTM      := -DOTM
 CFLAGS_OTM      += -fopenmp
 CFLAGS_OTM      += -I $(LIBOTM_DIR)
 
-CFLAGS          += -g -Wall -pthread
+CFLAGS          += -g -Wall -pthread 
 CFLAGS          += -O3
 CFLAGS          += -I$(LIB)
 CPP             := g++

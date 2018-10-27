@@ -7,7 +7,7 @@
 
 SUFF=.rtm
 
-CFLAGS   += -DHTM # We substitute our RTM implementation for HTM.                                                                                                                                                
+CFLAGS   += -mrtm -DHTM # We substitute our RTM implementation for HTM.                                                                                                                                                
 CPPFLAGS := $(CFLAGS)
 
 # ==============================================================================
