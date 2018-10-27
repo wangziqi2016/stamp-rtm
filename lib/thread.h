@@ -148,6 +148,10 @@ inline void spinlock_release(volatile spinlock_t *lock) {
 inline int spinlock_isfree(volatile spinlock_t *lock) {
   return lock->flag == 0;
 }
+// Wait for the lock be become free, but do not acquire the lock
+inline void spinlock_wait(volatile spinlock_t *lock) {
+  while(!spinlock_isfree(lock)) _mm_pause();
+}
 
 extern spinlock_t global_rtm_mutex; // Fall back path
 
