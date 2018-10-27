@@ -330,7 +330,7 @@
                      XFAIL(failure);     \
                      tries--;   \
                      if(tries <= 0) { spinlock_acquire(&global_rtm_mutex); } \
-                     else { XBEGIN(failure); if(!spinlock_isfree(&global_rtm_mutex)) XABORT(0xff); }
+                     else { spinlock_wait(&global_rtm_mutex); XBEGIN(failure); if(!spinlock_isfree(&global_rtm_mutex)) XABORT(0xff); }
                                             
 
 #define TM_END()     if(tries > 0) { XEND(); } \

@@ -39,11 +39,17 @@
         }
 #endif // OLD_RTM_MACROSES
 
-#define XBEGIN(label) asm volatile goto(".byte 0xc7,0xf8 ; .long %l0-1f\n1:" ::: "eax","memory" : label)
-#define XEND() asm volatile(".byte 0x0f,0x01,0xd5" ::: "memory")
-#define XFAIL(label) label: do { asm volatile(".byte 0x48, 0x87, 0xC9" ::: "memory"); asm volatile("" ::: "eax", "memory"); } while(0)
+#define XBEGIN(label)   \
+     asm volatile goto(".byte 0xc7,0xf8 ; .long %l0-1f\n1:" ::: "eax","memory" : label)
+#define XEND()    asm volatile(".byte 0x0f,0x01,0xd5" ::: "memory")
+// 31 c0 ff c8: xor eax, eax; dec eax;  -> This is used to indicate when a fall through path is not executed eax is 0xffffffff
+// 48 87 c9: xchg rcx, rcx -> This is for instrumentation
+// The last assembly is for the assembler to not assume EAX after this point and do not reorder inst
+#define XFAIL(label)        asm volatile(".byte 0x31, 0xC0, 0xFF, 0xC8" ::: "eax", "memory"); \
+                     label: asm volatile(".byte 0x48, 0x87, 0xC9" ::: "eax", "memory"); \
+                            asm volatile("" ::: "eax", "memory");
 #define XFAIL_STATUS(label, status) label: asm volatile("" : "=a" (status) :: "memory")
-#define XABORT(status) do { asm volatile (".byte 0xc6, 0xf8, " #status :::"eax"); } while(0)
+#define XABORT(status) _xabort(status)
 #define XTEST() ({ char o = 0 ;                     \
            asm volatile(".byte 0x0f,0x01,0xd6 ; setnz %0" : "+r" (o)::"memory"); \
            o; })
