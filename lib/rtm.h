@@ -49,7 +49,7 @@
                      label: asm volatile(".byte 0x48, 0x87, 0xC9" ::: "eax", "memory"); \
                             asm volatile("" ::: "eax", "memory");
 #define XFAIL_STATUS(label, status) label: asm volatile("" : "=a" (status) :: "memory")
-#define XABORT(status) _xabort(status)
+#define XABORT(status) asm volatile (".byte 0xc6, 0xf8, " #status :::"eax") 
 #define XTEST() ({ char o = 0 ;                     \
            asm volatile(".byte 0x0f,0x01,0xd6 ; setnz %0" : "+r" (o)::"memory"); \
            o; })
