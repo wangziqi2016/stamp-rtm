@@ -138,18 +138,20 @@ typedef struct {
   unsigned long padding[7]; 
 } __attribute__ ((aligned(64))) spinlock_t;
 
-inline void spinlock_init(volatile spinlock_t *lock) { lock->flag = 0; }
-inline void spinlock_acquire(volatile spinlock_t *lock) { 
+#define _mm_pause() asm volatile(".byte 0xF3, 0x90" ::: "memory")
+
+static inline void spinlock_init(volatile spinlock_t *lock) { lock->flag = 0; }
+static inline void spinlock_acquire(volatile spinlock_t *lock) { 
   while(lock->flag == 1UL || __sync_lock_test_and_set(&lock->flag, 1UL) == 1UL) _mm_pause(); 
 }
-inline void spinlock_release(volatile spinlock_t *lock) {
+static inline void spinlock_release(volatile spinlock_t *lock) {
   __sync_lock_release(&lock->flag);
 }
-inline int spinlock_isfree(volatile spinlock_t *lock) {
+static inline int spinlock_isfree(volatile spinlock_t *lock) {
   return lock->flag == 0;
 }
 // Wait for the lock be become free, but do not acquire the lock
-inline void spinlock_wait(volatile spinlock_t *lock) {
+static inline void spinlock_wait(volatile spinlock_t *lock) {
   while(!spinlock_isfree(lock)) _mm_pause();
 }
 
