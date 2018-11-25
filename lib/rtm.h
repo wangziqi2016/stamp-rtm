@@ -62,5 +62,7 @@
 #define XABORT_DEBUG        (1 << 4)
 #define XABORT_STATUS(x)    (((x) >> 24) & 0xff)
 
+#define ABORT_CODE_ILLEGAL  0xfe // Illegal instruction; Used to check if we should retry
+#define XABORT_STATUS_NONE (0xFFFFFFFF) // A new txn just started
 
 #endif /* RTM_H_ */

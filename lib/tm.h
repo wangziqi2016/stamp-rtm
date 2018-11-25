@@ -328,7 +328,9 @@
 #define TM_BEGIN() { __label__ failure;  \
                      int tries = 4;    \
                      XFAIL(failure);     \
-                     tries--;   \
+                     register unsigned int abort_status asm("eax"); \
+                     if(abort_status != XABORT_STATUS_NONE && XABORT_STATUS(abort_status) == ABORT_CODE_ILLEGAL) { tries = 0; } \
+                     else { tries--; }  \
                      if(tries <= 0) { spinlock_acquire(&global_rtm_mutex); } \
                      else { spinlock_wait(&global_rtm_mutex); XBEGIN(failure); if(!spinlock_isfree(&global_rtm_mutex)) XABORT(0xff); }
                                             
