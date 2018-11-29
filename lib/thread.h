@@ -138,11 +138,13 @@ typedef struct {
   unsigned long padding[7]; 
 } __attribute__ ((aligned(64))) spinlock_t;
 
-#define _mm_pause() asm volatile(".byte 0xF3, 0x90" ::: "memory")
+#ifndef _mm_pause_private
+#define _mm_pause_private() asm volatile(".byte 0xF3, 0x90" ::: "memory")
+#endif
 
 static inline void spinlock_init(volatile spinlock_t *lock) { lock->flag = 0; }
 static inline void spinlock_acquire(volatile spinlock_t *lock) { 
-  while(lock->flag == 1UL || __sync_lock_test_and_set(&lock->flag, 1UL) == 1UL) _mm_pause(); 
+  while(lock->flag == 1UL || __sync_lock_test_and_set(&lock->flag, 1UL) == 1UL) _mm_pause_private(); 
 }
 static inline void spinlock_release(volatile spinlock_t *lock) {
   __sync_lock_release(&lock->flag);
@@ -152,7 +154,7 @@ static inline int spinlock_isfree(volatile spinlock_t *lock) {
 }
 // Wait for the lock be become free, but do not acquire the lock
 static inline void spinlock_wait(volatile spinlock_t *lock) {
-  while(!spinlock_isfree(lock)) _mm_pause();
+  while(!spinlock_isfree(lock)) _mm_pause_private();
 }
 
 extern spinlock_t global_rtm_mutex; // Fall back path
