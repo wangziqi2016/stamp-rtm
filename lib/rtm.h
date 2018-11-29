@@ -50,9 +50,13 @@
                             asm volatile("" ::: "eax", "memory");
 #define XFAIL_STATUS(label, status) label: asm volatile("" : "=a" (status) :: "memory")
 #define XABORT(status) asm volatile (".byte 0xc6, 0xf8, " #status :::"eax") 
+// This must be separately defined because strinify will not replaced by preprocessor
+#define XABORT_RESTART() asm volatile (".byte 0xc6, 0xf8, 0xf5" :::"eax") 
 #define XTEST() ({ char o = 0 ;                     \
            asm volatile(".byte 0x0f,0x01,0xd6 ; setnz %0" : "+r" (o)::"memory"); \
            o; })
+
+#define TM_MARK_RO()   asm volatile(".byte 0x87, 0xf6" ::: "memory");   // XCHG ESI, ESI after xbegin marks read-only txn
 
 /* Status bits */
 #define XABORT_EXPLICIT_ABORT   (1 << 0)
@@ -62,7 +66,10 @@
 #define XABORT_DEBUG        (1 << 4)
 #define XABORT_STATUS(x)    (((x) >> 24) & 0xff)
 
-#define ABORT_CODE_ILLEGAL  0xfe // Illegal instruction; Used to check if we should retry
+// Illegal instruction; Used to check if we should retry
+#define ABORT_CODE_ILLEGAL  (0xfe)
+// Restart abort code
+#define ABORT_CODE_RESTART  (0xf5)
 #define XABORT_STATUS_NONE (0xFFFFFFFF) // A new txn just started
 
 #endif /* RTM_H_ */
