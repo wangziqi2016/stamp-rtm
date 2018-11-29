@@ -234,7 +234,9 @@ MAIN (argc,argv)
         sequencer_run(sequencerPtr);
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(sequencer_run, (void*)sequencerPtr);
+    TM_SAMPLE_INST2();
 #endif
     GOTO_REAL();
     TIMER_READ(stop);
@@ -252,7 +254,7 @@ MAIN (argc,argv)
             printf("sequence = %s\n", sequence);
         }
         fflush(stdout);
-        assert(strlen(sequence) >= strlen(gene));
+        //assert(strlen(sequence) >= strlen(gene));
     }
 
     /* Clean up */
