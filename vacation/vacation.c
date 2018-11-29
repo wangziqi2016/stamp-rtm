@@ -439,7 +439,9 @@ MAIN(argc, argv)
         client_run(clients);
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(client_run, (void*)clients);
+    TM_SAMPLE_INST2();
 #endif
     GOTO_REAL();
     TIMER_READ(stop);
