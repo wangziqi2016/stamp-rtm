@@ -282,12 +282,15 @@
 //#    error HTM requries SIMULATOR
 #  endif
 
+#  ifdef OTM
+#  error OTM cannot be used with HTM
+#  else
+
 #  include <assert.h>
 //#  include <tmapi.h>
 #  include "memory.h"
 #  include "thread.h"
 #  include "types.h"
-
 #  include "rtm.h"
 
 #  define TM_ARG                        /* nothing */
@@ -309,49 +312,42 @@
 #  define TM_MALLOC(size)               malloc(size)  //memory_get(thread_getId(), size)
 #  define TM_FREE(ptr)                  free(ptr)    /* TODO: thread local free is non-trivial */
 
-#  ifdef OTM
-
-#    define thread_getId()              omp_get_thread_num()
-#    define thread_getNumThread()       omp_get_num_threads()
-#    define thread_startup(numThread)   omp_set_num_threads(numThread)
-#    define thread_shutdown()           /* nothing */
-#    define thread_barrier_wait();      _Pragma ("omp barrier")
-#    define TM_BEGIN()                  _Pragma ("omp transaction") {
-#    define TM_BEGIN_RO()               _Pragma ("omp transaction") {
-#    define TM_END()                    }
-#    define TM_RESTART()                _TM_Abort()
-
-#    define TM_EARLY_RELEASE(var)       TM_Release(&(var))
-
-#  else /* !OTM */
-
 #define TM_BEGIN() { __label__ failure;  \
-                     int tries = 4;    \
+                     int tries = 9;    \
                      XFAIL(failure);     \
                      register unsigned int abort_status asm("eax"); \
                      if(abort_status != XABORT_STATUS_NONE && XABORT_STATUS(abort_status) == ABORT_CODE_ILLEGAL) { tries = 0; } \
                      else { tries--; }  \
                      if(tries <= 0) { spinlock_acquire(&global_rtm_mutex); } \
                      else { spinlock_wait(&global_rtm_mutex); XBEGIN(failure); if(!spinlock_isfree(&global_rtm_mutex)) XABORT(0xff); }
-                                            
+
+// This version retries for illegal inst
+/*
+#define TM_BEGIN() { __label__ failure;  \
+                     int tries = 9;    \
+                     XFAIL(failure);     \
+                     tries--;            \
+                     if(tries <= 0) { spinlock_acquire(&global_rtm_mutex); } \
+                     else { spinlock_wait(&global_rtm_mutex); XBEGIN(failure); if(!spinlock_isfree(&global_rtm_mutex)) XABORT(0xff); }
+*/                                          
 
 #define TM_END()     if(tries > 0) { XEND(); } \
                      else { spinlock_release(&global_rtm_mutex); } \
                    };
 
 
+#define TM_SAMPLE_INST1() asm volatile(".byte 0x87, 0xd2" ::: "memory"); // XCHG EDX, EDX samples the current core inst count into array 1
+#define TM_SAMPLE_INST2() asm volatile(".byte 0x87, 0xdb" ::: "memory"); // XCHG EBX, EBX samples the current core inst count into array 2
 
+#define TM_BEGIN_RO()                 TM_BEGIN(); TM_MARK_RO()
+#define TM_RESTART()                  XABORT_RESTART()
+#define TM_EARLY_RELEASE(var)
 
-#    define TM_BEGIN_RO()                 TM_BEGIN()
-#    define TM_RESTART()                  XABORT(0xab);
-#    define TM_EARLY_RELEASE(var)         
+#define TM_SHARED_READ(var)         (var)
+#define TM_SHARED_WRITE(var, val)   ({var = val; var;})
+#define TM_LOCAL_WRITE(var, val)    ({var = val; var;})
 
-#  define TM_SHARED_READ(var)         (var)
-#  define TM_SHARED_WRITE(var, val)   ({var = val; var;})
-#  define TM_LOCAL_WRITE(var, val)    ({var = val; var;})
-
-
-#  endif /* !OTM */
+#endif /* !OTM */
 
 
   /* =============================================================================
