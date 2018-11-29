@@ -224,7 +224,9 @@ MAIN(argc, argv)
         router_solve((void *)&routerArg);
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(router_solve, (void*)&routerArg);
+    TM_SAMPLE_INST2();
 #endif
     GOTO_REAL();
     TIMER_T stopTime;
