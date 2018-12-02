@@ -321,6 +321,10 @@
                      if(tries <= 0) { spinlock_acquire(&global_rtm_mutex); } \
                      else { spinlock_wait(&global_rtm_mutex); XBEGIN(failure); if(!spinlock_isfree(&global_rtm_mutex)) XABORT(0xff); }
 
+#define TM_END()     if(tries > 0) { XEND(); } \
+                     else if(tries == 0) { spinlock_release(&global_rtm_mutex); } \
+                   };
+
 // This version retries for illegal inst
 /*
 #define TM_BEGIN() { __label__ failure;  \
@@ -329,11 +333,20 @@
                      tries--;            \
                      if(tries <= 0) { spinlock_acquire(&global_rtm_mutex); } \
                      else { spinlock_wait(&global_rtm_mutex); XBEGIN(failure); if(!spinlock_isfree(&global_rtm_mutex)) XABORT(0xff); }
+
+#define TM_END()     if(tries > 0) { XEND(); tls[id].xend++; } \
+                     else if(tries == 0) { spinlock_release(&global_rtm_mutex); } \
+                   };
 */                                          
 
-#define TM_END()     if(tries > 0) { XEND(); } \
-                     else { spinlock_release(&global_rtm_mutex); } \
-                   };
+// This version fits into original zsim-tm
+/*
+#define TM_BEGIN() { __label__ failure; XFAIL(failure);  \
+                     XBEGIN(failure); \
+                     register unsigned int abort_status asm("eax"); \
+                     if(abort_status != _XBEGIN_STARTED) goto failure;
+#define TM_END()     XEND(); };
+*/
 
 
 #define TM_SAMPLE_INST1() asm volatile(".byte 0x87, 0xd2" ::: "memory"); // XCHG EDX, EDX samples the current core inst count into array 1
