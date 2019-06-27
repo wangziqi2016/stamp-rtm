@@ -1490,8 +1490,10 @@ learner_run (learner_t* learnerPtr)
         learnStructure((void*)learnerPtr);
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(&createTaskList, (void*)learnerPtr);
     thread_start(&learnStructure, (void*)learnerPtr);
+    TM_SAMPLE_INST2();
 #endif
 }
 
