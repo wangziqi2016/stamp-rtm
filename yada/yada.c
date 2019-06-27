@@ -309,7 +309,9 @@ MAIN(argc, argv)
         process();
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(process, NULL);
+    TM_SAMPLE_INST2();
 #endif
     GOTO_REAL();
     TIMER_T stop;
