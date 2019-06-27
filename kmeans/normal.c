@@ -286,7 +286,9 @@ normal_exec (int       nthreads,
             work(&args);
         }
 #else
+        TM_SAMPLE_INST1();
         thread_start(work, &args);
+        TM_SAMPLE_INST2();
 #endif
 
         delta = global_delta;
