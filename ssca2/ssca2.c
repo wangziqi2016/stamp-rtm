@@ -177,7 +177,9 @@ MAIN(argc, argv)
         genScalData((void*)SDGdata);
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(genScalData, (void*)SDGdata);
+    TM_SAMPLE_INST2();
 #endif
     GOTO_REAL();
 #else /* !USE_PARALLEL_DATA_GENERATION */
@@ -221,7 +223,9 @@ MAIN(argc, argv)
         computeGraph((void*)&computeGraphArgs);
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(computeGraph, (void*)&computeGraphArgs);
+    TM_SAMPLE_INST2();
 #endif
     GOTO_REAL();
 
@@ -267,7 +271,9 @@ MAIN(argc, argv)
         getStartLists((void*)&getStartListsArg);
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(getStartLists, (void*)&getStartListsArg);
+    TM_SAMPLE_INST2();
 #endif
     GOTO_REAL();
 
@@ -315,7 +321,9 @@ MAIN(argc, argv)
             findSubGraphs0((void*)&findSubGraphs0Arg);
         }
 #else
+        TM_SAMPLE_INST1();
         thread_start(findSubGraphs0, (void*)&findSubGraphs0Arg);
+        TM_SAMPLE_INST2();
 #endif
         GOTO_REAL();
 
@@ -346,7 +354,9 @@ MAIN(argc, argv)
             findSubGraphs1((void*)&findSubGraphs1Arg);
         }
 #else
+        TM_SAMPLE_INST1();
         thread_start(findSubGraphs1, (void*)&findSubGraphs1Arg);
+        TM_SAMPLE_INST2();
 #endif
         GOTO_REAL();
 
@@ -402,7 +412,9 @@ MAIN(argc, argv)
             findSubGraphs2((void*)&findSubGraphs2Arg);
         }
 #else
+        TM_SAMPLE_INST1();
         thread_start(findSubGraphs2, (void*)&findSubGraphs2Arg);
+        TM_SAMPLE_INST2();
 #endif
         GOTO_REAL();
 
@@ -472,7 +484,9 @@ MAIN(argc, argv)
         cutClusters((void*)G);
     }
 #else
+    TM_SAMPLE_INST1();
     thread_start(cutClusters, (void*)G);
+    TM_SAMPLE_INST2();
 #endif
     GOTO_REAL();
 
