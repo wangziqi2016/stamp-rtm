@@ -50,13 +50,16 @@
                             asm volatile("" ::: "eax", "memory");
 #define XFAIL_STATUS(label, status) label: asm volatile("" : "=a" (status) :: "memory")
 #define XABORT(status) asm volatile (".byte 0xc6, 0xf8, " #status :::"eax") 
-// This must be separately defined because strinify will not replaced by preprocessor
+// Abort reason is set to 0xF5, which is interpreted as "USER"
 #define XABORT_RESTART() asm volatile (".byte 0xc6, 0xf8, 0xf5" :::"eax") 
 #define XTEST() ({ char o = 0 ;                     \
            asm volatile(".byte 0x0f,0x01,0xd6 ; setnz %0" : "+r" (o)::"memory"); \
            o; })
 
-#define TM_MARK_RO()   asm volatile(".byte 0x87, 0xf6" ::: "memory");   // XCHG ESI, ESI after xbegin marks read-only txn
+// XCHG EDI, EDI
+#define TM_MARK_RO()             asm volatile(".byte 0x87, 0xff" ::: "memory"); 
+// XCHG ESI, ESI Toggles whether we track the read set
+#define TM_TOGGLE_TRACK_READ()   asm volatile(".byte 0x87, 0xf6" ::: "memory"); 
 
 /* Status bits */
 #define XABORT_EXPLICIT_ABORT   (1 << 0)
