@@ -86,8 +86,9 @@ typedef struct grid {
 } grid_t;
 
 enum {
-    GRID_POINT_FULL  = -2L,
-    GRID_POINT_EMPTY = -1L
+    GRID_POINT_INVALID = -3L,
+    GRID_POINT_FULL    = -2L,
+    GRID_POINT_EMPTY   = -1L
 };
 
 
