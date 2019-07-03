@@ -167,7 +167,7 @@ PexpandToNeighbor (grid_t* myGridPtr,
  * =============================================================================
  */
 static bool_t
-PdoExpansion (router_t* routerPtr, grid_t* myGridPtr, queue_t* queuePtr,
+PdoExpansion (router_t* routerPtr, grid_t* gridPtr, grid_t* myGridPtr, queue_t* queuePtr,
               coordinate_t* srcPtr, coordinate_t* dstPtr)
 {
     long xCost = routerPtr->xCost;
@@ -272,6 +272,8 @@ static vector_t*
 PdoTraceback (grid_t* gridPtr, grid_t* myGridPtr,
               coordinate_t* dstPtr, long bendCost)
 {
+    assert(!myGridPtr);  // Note: We always pass this as NULL because we do not copy
+    myGridPtr = gridPtr; // Directly working on the gridPtr object without privitization
     vector_t* pointVectorPtr = PVECTOR_ALLOC(1);
     assert(pointVectorPtr);
 
@@ -394,16 +396,18 @@ router_solve (void* argPtr)
         vector_t* pointVectorPtr = NULL;
 
         TM_BEGIN();
-        grid_copy(myGridPtr, gridPtr); /* ok if not most up-to-date */
-        if (PdoExpansion(routerPtr, myGridPtr, myExpansionQueuePtr,
+        //grid_copy(myGridPtr, gridPtr); /* ok if not most up-to-date */
+        grid_set(myGridPtr, GRID_POINT_INVALID); // Start with all points being invalid
+        if (PdoExpansion(routerPtr, gridPtr, myGridPtr, myExpansionQueuePtr,
                          srcPtr, dstPtr)) {
-            pointVectorPtr = PdoTraceback(gridPtr, myGridPtr, dstPtr, bendCost);
+            pointVectorPtr = PdoTraceback(gridPtr, NULL, dstPtr, bendCost);
             /*
              * TODO: fix memory leak
              *
              * pointVectorPtr will be a memory leak if we abort this transaction
              */
             if (pointVectorPtr) {
+                // Defined in grid.c as TMgrid_addPath
                 TMGRID_ADDPATH(gridPtr, pointVectorPtr);
                 TM_LOCAL_WRITE(success, TRUE);
             }
@@ -426,7 +430,7 @@ router_solve (void* argPtr)
     TMLIST_INSERT(pathVectorListPtr, (void*)myPathVectorPtr);
     TM_END();
 
-    PGRID_FREE(myGridPtr);
+    //PGRID_FREE(myGridPtr);
     PQUEUE_FREE(myExpansionQueuePtr);
 
 #if DEBUG
