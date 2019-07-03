@@ -394,7 +394,10 @@ router_solve (void* argPtr)
         vector_t* pointVectorPtr = NULL;
 
         TM_BEGIN();
+        // Do not track the read set
+        TM_TOGGLE_TRACK_READ();
         grid_copy(myGridPtr, gridPtr); /* ok if not most up-to-date */
+        TM_TOGGLE_TRACK_READ();
         if (PdoExpansion(routerPtr, myGridPtr, myExpansionQueuePtr,
                          srcPtr, dstPtr)) {
             pointVectorPtr = PdoTraceback(gridPtr, myGridPtr, dstPtr, bendCost);
