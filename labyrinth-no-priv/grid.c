@@ -188,11 +188,6 @@ grid_copy (grid_t* dstGridPtr, grid_t* srcGridPtr)
 #endif
 }
 
-void grid_set(grid_t* gridPtr, long value) {
-    int n = gridPtr->width * gridPtr->height * gridPtr->depth;
-    for(long i = 0;i < n;i++) gridPtr->points[i] = value;
-}
-
 
 /* =============================================================================
  * grid_isPointValid
@@ -205,11 +200,6 @@ grid_isPointValid (grid_t* gridPtr, long x, long y, long z)
         y < 0 || y >= gridPtr->height ||
         z < 0 || z >= gridPtr->depth)
     {
-        return FALSE;
-    }
-
-    // CHANGE: DO NOT DO ANYTHING FOR INVALID NODE
-    if(*grid_getPointRef(gridPtr, x, y, z) == GRID_POINT_INVALID) {
         return FALSE;
     }
 
@@ -325,11 +315,10 @@ TMgrid_addPath (TM_ARGDECL  grid_t* gridPtr, vector_t* pointVectorPtr)
 
     for (i = 1; i < (n-1); i++) {
         long* gridPointPtr = (long*)vector_at(pointVectorPtr, i);
-        // Do not do OCC style restart
-        //long value = (long)TM_SHARED_READ(*gridPointPtr);
-        //if (value != GRID_POINT_EMPTY) {
-        //    TM_RESTART();
-        //}
+        long value = (long)TM_SHARED_READ(*gridPointPtr);
+        if (value != GRID_POINT_EMPTY) {
+            TM_RESTART();
+        }
         TM_SHARED_WRITE(*gridPointPtr, GRID_POINT_FULL);
     }
 }

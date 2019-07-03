@@ -86,9 +86,8 @@ typedef struct grid {
 } grid_t;
 
 enum {
-    GRID_POINT_INVALID = -3L,
-    GRID_POINT_FULL    = -2L,
-    GRID_POINT_EMPTY   = -1L
+    GRID_POINT_FULL  = -2L,
+    GRID_POINT_EMPTY = -1L
 };
 
 
@@ -125,12 +124,12 @@ Pgrid_free (grid_t* gridPtr);
 
 
 /* =============================================================================
- * grid_copy/grid_set
+ * grid_copy
  * =============================================================================
  */
 void
 grid_copy (grid_t* dstGridPtr, grid_t* srcGridPtr);
-void grid_set(grid_t* gridPtr, long value);
+
 
 /* =============================================================================
  * grid_isPointValid
