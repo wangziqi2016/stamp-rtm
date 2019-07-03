@@ -60,6 +60,8 @@
 #define TM_MARK_RO()             asm volatile(".byte 0x87, 0xff" ::: "memory"); 
 // XCHG ESI, ESI Toggles whether we track the read set
 #define TM_TOGGLE_TRACK_READ()   asm volatile(".byte 0x87, 0xf6" ::: "memory"); 
+// XCHG ESP, ESP Toggled an user defined action implemented by the TM
+#define TM_TOGGLE_USER_DEFINED_1()   asm volatile(".byte 0x87, 0xe4" ::: "memory"); 
 
 /* Status bits */
 #define XABORT_EXPLICIT_ABORT   (1 << 0)
