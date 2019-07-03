@@ -188,6 +188,11 @@ grid_copy (grid_t* dstGridPtr, grid_t* srcGridPtr)
 #endif
 }
 
+void grid_set(grid_t* gridPtr, long value) {
+    int n = gridPtr->width * gridPtr->height * gridPtr->depth;
+    for(long i = 0;i < n;i++) gridPtr->points[i] = value;
+}
+
 
 /* =============================================================================
  * grid_isPointValid

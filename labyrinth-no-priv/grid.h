@@ -125,12 +125,12 @@ Pgrid_free (grid_t* gridPtr);
 
 
 /* =============================================================================
- * grid_copy
+ * grid_copy/grid_set
  * =============================================================================
  */
 void
 grid_copy (grid_t* dstGridPtr, grid_t* srcGridPtr);
-
+void grid_set(grid_t* gridPtr, long value);
 
 /* =============================================================================
  * grid_isPointValid
