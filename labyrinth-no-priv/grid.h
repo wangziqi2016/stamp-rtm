@@ -1,6 +1,6 @@
 /* =============================================================================
  *
- * grid.c
+ * grid.h
  *
  * =============================================================================
  *
@@ -69,18 +69,26 @@
  */
 
 
-#include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "coordinate.h"
-#include "grid.h"
-#include "tm.h"
+#ifndef GRID_H
+#define GRID_H 1
+
+
 #include "types.h"
 #include "vector.h"
 
 
-const unsigned long CACHE_LINE_SIZE = 32UL;
+typedef struct grid {
+    long width;
+    long height;
+    long depth;
+    long* points;
+    long* points_unaligned;
+} grid_t;
+
+enum {
+    GRID_POINT_FULL  = -2L,
+    GRID_POINT_EMPTY = -1L
+};
 
 
 /* =============================================================================
@@ -88,55 +96,15 @@ const unsigned long CACHE_LINE_SIZE = 32UL;
  * =============================================================================
  */
 grid_t*
-grid_alloc (long width, long height, long depth)
-{
-    grid_t* gridPtr;
-
-    gridPtr = (grid_t*)malloc(sizeof(grid_t));
-    if (gridPtr) {
-        gridPtr->width  = width;
-        gridPtr->height = height;
-        gridPtr->depth  = depth;
-        long n = width * height * depth;
-        long* points_unaligned = (long*)malloc(n * sizeof(long) + CACHE_LINE_SIZE);
-        assert(points_unaligned);
-        gridPtr->points_unaligned = points_unaligned;
-        gridPtr->points = (long*)((char*)(((unsigned long)points_unaligned
-                                          & ~(CACHE_LINE_SIZE-1)))
-                                  + CACHE_LINE_SIZE);
-        memset(gridPtr->points, GRID_POINT_EMPTY, (n * sizeof(long)));
-    }
-
-    return gridPtr;
-}
+grid_alloc (long width, long height, long depth);
 
 
 /* =============================================================================
- * Pgrid_alloc
+ * TMgrid_alloc
  * =============================================================================
  */
 grid_t*
-Pgrid_alloc (long width, long height, long depth)
-{
-    grid_t* gridPtr;
-
-    gridPtr = (grid_t*)P_MALLOC(sizeof(grid_t));
-    if (gridPtr) {
-        gridPtr->width  = width;
-        gridPtr->height = height;
-        gridPtr->depth  = depth;
-        long n = width * height * depth;
-        long* points_unaligned = (long*)P_MALLOC(n * sizeof(long) + CACHE_LINE_SIZE);
-        assert(points_unaligned);
-        gridPtr->points_unaligned = points_unaligned;
-        gridPtr->points = (long*)((char*)(((unsigned long)points_unaligned
-                                          & ~(CACHE_LINE_SIZE-1)))
-                                  + CACHE_LINE_SIZE);
-        memset(gridPtr->points, GRID_POINT_EMPTY, (n * sizeof(long)));
-    }
-
-    return gridPtr;
-}
+Pgrid_alloc (long width, long height, long depth);
 
 
 /* =============================================================================
@@ -144,23 +112,15 @@ Pgrid_alloc (long width, long height, long depth)
  * =============================================================================
  */
 void
-grid_free (grid_t* gridPtr)
-{
-    free(gridPtr->points_unaligned);
-    free(gridPtr);
-}
+grid_free (grid_t* gridPtr);
 
 
 /* =============================================================================
- * TMgrid_free
+ * Pgrid_free
  * =============================================================================
  */
 void
-Pgrid_free (grid_t* gridPtr)
-{
-    P_FREE(gridPtr->points_unaligned);
-    P_FREE(gridPtr);
-}
+Pgrid_free (grid_t* gridPtr);
 
 
 /* =============================================================================
@@ -168,25 +128,7 @@ Pgrid_free (grid_t* gridPtr)
  * =============================================================================
  */
 void
-grid_copy (grid_t* dstGridPtr, grid_t* srcGridPtr)
-{
-    assert(srcGridPtr->width  == dstGridPtr->width);
-    assert(srcGridPtr->height == dstGridPtr->height);
-    assert(srcGridPtr->depth  == dstGridPtr->depth);
-
-    long n = srcGridPtr->width * srcGridPtr->height * srcGridPtr->depth;
-    //printf("dest %p src %p len %lu\n", dstGridPtr->points, srcGridPtr->points, n * sizeof(long));
-    memcpy(dstGridPtr->points, srcGridPtr->points, (n * sizeof(long)));
-
-#ifdef USE_EARLY_RELEASE
-    long* srcPoints = srcGridPtr->points;
-    long i;
-    long i_step = (CACHE_LINE_SIZE / sizeof(srcPoints[0]));
-    for (i = 0; i < n; i+=i_step) {
-        TM_EARLY_RELEASE(srcPoints[i]); /* releases entire line */
-    }
-#endif
-}
+grid_copy (grid_t* dstGridPtr, grid_t* srcGridPtr);
 
 
 /* =============================================================================
@@ -194,17 +136,7 @@ grid_copy (grid_t* dstGridPtr, grid_t* srcGridPtr)
  * =============================================================================
  */
 bool_t
-grid_isPointValid (grid_t* gridPtr, long x, long y, long z)
-{
-    if (x < 0 || x >= gridPtr->width  ||
-        y < 0 || y >= gridPtr->height ||
-        z < 0 || z >= gridPtr->depth)
-    {
-        return FALSE;
-    }
-
-    return TRUE;
-}
+grid_isPointValid (grid_t* gridPtr, long x, long y, long z);
 
 
 /* =============================================================================
@@ -212,10 +144,7 @@ grid_isPointValid (grid_t* gridPtr, long x, long y, long z)
  * =============================================================================
  */
 long*
-grid_getPointRef (grid_t* gridPtr, long x, long y, long z)
-{
-    return &(gridPtr->points[(z * gridPtr->height + y) * gridPtr->width + x]);
-}
+grid_getPointRef (grid_t* gridPtr, long x, long y, long z);
 
 
 /* =============================================================================
@@ -224,17 +153,7 @@ grid_getPointRef (grid_t* gridPtr, long x, long y, long z)
  */
 void
 grid_getPointIndices (grid_t* gridPtr,
-                      long* gridPointPtr, long* xPtr, long* yPtr, long* zPtr)
-{
-    long height = gridPtr->height;
-    long width  = gridPtr->width;
-    long area = height * width;
-    long index3d = (gridPointPtr - gridPtr->points);
-    (*zPtr) = index3d / area;
-    long index2d = index3d % area;
-    (*yPtr) = index2d / width;
-    (*xPtr) = index2d % width;
-}
+                      long* gridPointPtr, long* xPtr, long* yPtr, long* zPtr);
 
 
 /* =============================================================================
@@ -242,10 +161,7 @@ grid_getPointIndices (grid_t* gridPtr,
  * =============================================================================
  */
 long
-grid_getPoint (grid_t* gridPtr, long x, long y, long z)
-{
-    return *grid_getPointRef(gridPtr, x, y, z);
-}
+grid_getPoint (grid_t* gridPtr, long x, long y, long z);
 
 
 /* =============================================================================
@@ -253,11 +169,7 @@ grid_getPoint (grid_t* gridPtr, long x, long y, long z)
  * =============================================================================
  */
 bool_t
-grid_isPointEmpty (grid_t* gridPtr, long x, long y, long z)
-{
-    long value = grid_getPoint(gridPtr, x, y, z);
-    return ((value == GRID_POINT_EMPTY) ? TRUE : FALSE);
-}
+grid_isPointEmpty (grid_t* gridPtr, long x, long y, long z);
 
 
 /* =============================================================================
@@ -265,11 +177,7 @@ grid_isPointEmpty (grid_t* gridPtr, long x, long y, long z)
  * =============================================================================
  */
 bool_t
-grid_isPointFull (grid_t* gridPtr, long x, long y, long z)
-{
-    long value = grid_getPoint(gridPtr, x, y, z);
-    return ((value == GRID_POINT_FULL) ? TRUE : FALSE);
-}
+grid_isPointFull (grid_t* gridPtr, long x, long y, long z);
 
 
 /* =============================================================================
@@ -277,10 +185,7 @@ grid_isPointFull (grid_t* gridPtr, long x, long y, long z)
  * =============================================================================
  */
 void
-grid_setPoint (grid_t* gridPtr, long x, long y, long z, long value)
-{
-    (*grid_getPointRef(gridPtr, x, y, z)) = value;
-}
+grid_setPoint (grid_t* gridPtr, long x, long y, long z, long value);
 
 
 /* =============================================================================
@@ -288,40 +193,16 @@ grid_setPoint (grid_t* gridPtr, long x, long y, long z, long value)
  * =============================================================================
  */
 void
-grid_addPath (grid_t* gridPtr, vector_t* pointVectorPtr)
-{
-    long i;
-    long n = vector_getSize(pointVectorPtr);
-
-    for (i = 0; i < n; i++) {
-        coordinate_t* coordinatePtr = (coordinate_t*)vector_at(pointVectorPtr, i);
-        long x = coordinatePtr->x;
-        long y = coordinatePtr->y;
-        long z = coordinatePtr->z;
-        grid_setPoint(gridPtr, x, y, z, GRID_POINT_FULL);
-    }
-}
+grid_addPath (grid_t* gridPtr, vector_t* pointVectorPtr);
 
 
 /* =============================================================================
  * TMgrid_addPath
  * =============================================================================
  */
+TM_CALLABLE
 void
-TMgrid_addPath (TM_ARGDECL  grid_t* gridPtr, vector_t* pointVectorPtr)
-{
-    long i;
-    long n = vector_getSize(pointVectorPtr);
-
-    for (i = 1; i < (n-1); i++) {
-        long* gridPointPtr = (long*)vector_at(pointVectorPtr, i);
-        long value = (long)TM_SHARED_READ(*gridPointPtr);
-        if (value != GRID_POINT_EMPTY) {
-            TM_RESTART();
-        }
-        TM_SHARED_WRITE(*gridPointPtr, GRID_POINT_FULL);
-    }
-}
+TMgrid_addPath (TM_ARGDECL  grid_t* gridPtr, vector_t* pointVectorPtr);
 
 
 /* =============================================================================
@@ -329,26 +210,16 @@ TMgrid_addPath (TM_ARGDECL  grid_t* gridPtr, vector_t* pointVectorPtr)
  * =============================================================================
  */
 void
-grid_print (grid_t* gridPtr)
-{
-    long width  = gridPtr->width;
-    long height = gridPtr->height;
-    long depth  = gridPtr->depth;
-    long z;
+grid_print (grid_t* gridPtr);
 
-    for (z = 0; z < depth; z++) {
-        printf("[z = %li]\n", z);
-        long x;
-        for (x = 0; x < width; x++) {
-            long y;
-            for (y = 0; y < height; y++) {
-                printf("%4li", *grid_getPointRef(gridPtr, x, y, z));
-            }
-            puts("");
-        }
-        puts("");
-    }
-}
+
+#define PGRID_ALLOC(x, y, z)            Pgrid_alloc(x, y, z)
+#define PGRID_FREE(g)                   Pgrid_free(g)
+
+#define TMGRID_ADDPATH(g, p)            TMgrid_addPath(TM_ARG  g, p)
+
+
+#endif /* GRID_H */
 
 
 /* =============================================================================
