@@ -396,7 +396,9 @@ router_solve (void* argPtr)
         TM_BEGIN();
         // Do not track the read set
         TM_TOGGLE_TRACK_READ();
+        //TM_TOGGLE_USER_DEFINED_1();
         grid_copy(myGridPtr, gridPtr); /* ok if not most up-to-date */
+        //TM_TOGGLE_USER_DEFINED_1();
         TM_TOGGLE_TRACK_READ();
         if (PdoExpansion(routerPtr, myGridPtr, myExpansionQueuePtr,
                          srcPtr, dstPtr)) {

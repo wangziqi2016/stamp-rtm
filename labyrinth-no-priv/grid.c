@@ -315,7 +315,9 @@ TMgrid_addPath (TM_ARGDECL  grid_t* gridPtr, vector_t* pointVectorPtr)
 
     for (i = 1; i < (n-1); i++) {
         long* gridPointPtr = (long*)vector_at(pointVectorPtr, i);
+        TM_TOGGLE_USER_DEFINED_1();
         long value = (long)TM_SHARED_READ(*gridPointPtr);
+        TM_TOGGLE_USER_DEFINED_1();
         if (value != GRID_POINT_EMPTY) {
             TM_RESTART();
         }
