@@ -415,6 +415,8 @@ MAIN(argc, argv)
     TIMER_T stop;
 
     GOTO_REAL();
+    // Start simulation
+    NVOVERLAY_SIM_BEGIN();
 
     /* Initialization */
     parseArgs(argc, (char** const)argv);
@@ -468,6 +470,9 @@ MAIN(argc, argv)
     GOTO_SIM();
 
     thread_shutdown();
+
+    // End simulation
+    NVOVERLAY_SIM_END();
 
     MAIN_RETURN(0);
 }
