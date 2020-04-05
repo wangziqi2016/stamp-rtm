@@ -78,6 +78,9 @@
 #include <immintrin.h>
 #include <xmmintrin.h>
 
+// This file contains magic code
+#include "nvoverlay_sim.h"
+
 #ifdef HAVE_CONFIG_H
 # include "STAMP_config.h"
 #endif
@@ -598,6 +601,9 @@
 #  define TM_RESTART()                  assert(0)
 
 #  define TM_EARLY_RELEASE(var)         /* nothing */
+
+#define TM_SAMPLE_INST1() asm volatile(".byte 0x87, 0xd2" ::: "memory"); // XCHG EDX, EDX samples the current core inst count into array 1
+#define TM_SAMPLE_INST2() asm volatile(".byte 0x87, 0xdb" ::: "memory"); // XCHG EBX, EBX samples the current core inst count into array 2
 
 #endif /* SEQUENTIAL */
 
