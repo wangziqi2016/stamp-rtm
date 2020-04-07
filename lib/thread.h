@@ -159,6 +159,8 @@ static inline void spinlock_wait(volatile spinlock_t *lock) {
 
 extern spinlock_t global_rtm_mutex; // Fall back path
 
+extern spinlock_t global_lock;      // Used by sequential code
+
 /* =============================================================================
  * thread_startup
  * -- Create pool of secondary threads

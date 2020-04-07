@@ -85,6 +85,7 @@ static void*             global_argPtr          = NULL;
 static volatile bool_t   global_doShutdown      = FALSE;
 
 spinlock_t global_rtm_mutex; // Fall back path
+spinlock_t global_lock;      // Used by sequential code
 
 /* =============================================================================
  * threadWait
