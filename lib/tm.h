@@ -595,15 +595,19 @@
 
 #  endif /* !SIMULATOR */
 
-#  define TM_BEGIN()                    /* nothing */
-#  define TM_BEGIN_RO()                 /* nothing */
-#  define TM_END()                      /* nothing */
+#  define TM_BEGIN()                    spinlock_acquire(&global_lock);
+#  define TM_BEGIN_RO()                 spinlock_acquire(&global_lock);
+#  define TM_END()                      spinlock_release(&global_lock);
 #  define TM_RESTART()                  assert(0)
 
 #  define TM_EARLY_RELEASE(var)         /* nothing */
 
 #define TM_SAMPLE_INST1() asm volatile(".byte 0x87, 0xd2" ::: "memory"); // XCHG EDX, EDX samples the current core inst count into array 1
 #define TM_SAMPLE_INST2() asm volatile(".byte 0x87, 0xdb" ::: "memory"); // XCHG EBX, EBX samples the current core inst count into array 2
+
+#define TM_SHARED_READ(var)         (var)
+#define TM_SHARED_WRITE(var, val)   ({var = val; var;})
+#define TM_LOCAL_WRITE(var, val)    ({var = val; var;})
 
 #endif /* SEQUENTIAL */
 
