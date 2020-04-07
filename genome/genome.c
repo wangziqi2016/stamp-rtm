@@ -184,6 +184,7 @@ MAIN (argc,argv)
     TIMER_T start;
     TIMER_T stop;
 
+    NVOVERLAY_SIM_BEGIN();
     GOTO_REAL();
 
     /* Initialization */
@@ -269,6 +270,7 @@ MAIN (argc,argv)
 
     TM_SHUTDOWN();
     P_MEMORY_SHUTDOWN();
+    NVOVERLAY_SIM_END();    
 
     GOTO_SIM();
 
