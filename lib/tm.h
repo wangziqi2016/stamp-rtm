@@ -571,7 +571,7 @@
 #  define TM_ARGDECL_ALONE              /* nothing */
 #  define TM_CALLABLE                   /* nothing */
 
-#  define TM_STARTUP(numThread)         /* nothing */
+#  define TM_STARTUP(numThread)         { spinlock_init(&global_rtm_mutex); }
 #  define TM_SHUTDOWN()                 /* nothing */
 
 #  define TM_THREAD_ENTER()             /* nothing */
