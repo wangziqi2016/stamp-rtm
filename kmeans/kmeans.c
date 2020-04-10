@@ -163,6 +163,7 @@ MAIN(argc, argv)
     int     opt;
 
     GOTO_REAL();
+    NVOVERLAY_SIM_BEGIN();
 
     line = (char*)malloc(MAX_LINE_LENGTH); /* reserve memory line */
 
@@ -384,6 +385,7 @@ MAIN(argc, argv)
     GOTO_SIM();
 
     thread_shutdown();
+    NVOVERLAY_SIM_END();
 
     MAIN_RETURN(0);
 }
