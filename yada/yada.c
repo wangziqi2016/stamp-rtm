@@ -271,6 +271,7 @@ process ()
 MAIN(argc, argv)
 {
     GOTO_REAL();
+    NVOVERLAY_SIM_BEGIN();
 
     /*
      * Initialization
@@ -350,6 +351,7 @@ MAIN(argc, argv)
     GOTO_SIM();
 
     thread_shutdown();
+    NVOVERLAY_SIM_END();
 
     MAIN_RETURN(0);
 }

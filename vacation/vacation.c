@@ -415,8 +415,6 @@ MAIN(argc, argv)
     TIMER_T stop;
 
     GOTO_REAL();
-    // Start simulation
-    NVOVERLAY_SIM_BEGIN();
 
     /* Initialization */
     parseArgs(argc, (char** const)argv);
@@ -442,6 +440,7 @@ MAIN(argc, argv)
     }
 #else
     TM_SAMPLE_INST1();
+    NVOVERLAY_SIM_BEGIN(); // Only start counting inst at multi-threaded begin
     thread_start(client_run, (void*)clients);
     TM_SAMPLE_INST2();
 #endif

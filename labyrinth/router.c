@@ -76,6 +76,7 @@
 #include "queue.h"
 #include "router.h"
 #include "tm.h"
+#include "thread.h"
 #include "vector.h"
 
 
